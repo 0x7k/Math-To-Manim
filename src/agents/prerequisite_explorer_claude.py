@@ -1,9 +1,14 @@
 """
-Prerequisite Explorer - The Core Innovation (Claude Agent SDK Version)
-Recursively decomposes concepts by asking "What must I understand BEFORE this?"
+    Prerequisite Explorer - The Core Innovation (Claude Agent SDK Version)
+    Recursively decomposes concepts by asking "What must I understand BEFORE this?"
 
-Uses Claude Sonnet 4.5 via the Anthropic Claude Agent SDK.
-No training data required - uses Claude's reasoning to build knowledge trees.
+    Uses Claude Sonnet 4.5 via the Anthropic Claude Agent SDK.
+    No training data required - uses Claude's reasoning to build knowledge trees.
+
+    Prerequisite Explorer - 核心创新（Claude Agent SDK 版本）
+    通过提问**“在此之前，我必须理解什么？”** 来递归分解概念。
+    使用 Anthropic Claude Agent SDK 通过 Claude Sonnet 4.5 运行。
+    无需训练数据——利用 Claude 的推理能力来构建知识树。
 """
 
 import os
@@ -17,11 +22,11 @@ from anthropic import Anthropic
 from anthropic import NotFoundError
 from dotenv import load_dotenv
 
-# Import from same package using absolute imports
+# 使用绝对路径导入同一包中的模块
 try:
     from src.agents.claude_agent_runtime import run_query_via_sdk
 except ImportError:
-    # Fallback for direct execution
+    # 直接执行的回退
     try:
         from claude_agent_runtime import run_query_via_sdk
     except ImportError:
@@ -57,7 +62,10 @@ CLAUDE_MODEL = "claude-sonnet-4-5"  # Claude Sonnet 4.5
 
 @dataclass
 class KnowledgeNode:
-    """Represents a concept in the knowledge tree"""
+    """
+    Represents a concept in the knowledge tree
+    表示知识树中的一个概念
+    """
     concept: str
     depth: int
     is_foundation: bool
@@ -70,7 +78,10 @@ class KnowledgeNode:
     narrative: Optional[str] = None
 
     def to_dict(self) -> dict:
-        """Convert to dictionary for JSON serialization"""
+        """
+        Convert to dictionary for JSON serialization
+        转换为字典以便进行 JSON 序列化
+        """
         return {
             'concept': self.concept,
             'depth': self.depth,
@@ -83,7 +94,10 @@ class KnowledgeNode:
         }
 
     def print_tree(self, indent: int = 0):
-        """Pretty print the knowledge tree"""
+        """
+        Pretty print the knowledge tree
+        漂亮地输出知识树
+        """
         prefix = "  " * indent
         foundation_mark = " [FOUNDATION]" if self.is_foundation else ""
         print(f"{prefix}├─ {self.concept} (depth {self.depth}){foundation_mark}")
@@ -94,29 +108,35 @@ class KnowledgeNode:
 class PrerequisiteExplorer:
     """
     Core agent that recursively discovers prerequisites for any concept.
+    核心代理，可递归发现任何概念的先决条件。
     This is the key innovation - no training data needed!
+    这是关键创新——无需训练数据！
 
     Powered by Claude Sonnet 4.5 for superior reasoning capabilities.
+    由 Claude Sonnet 4.5 驱动，具备卓越的推理能力。
     """
 
     def __init__(self, model: str = CLAUDE_MODEL, max_depth: int = 4):
         self.model = model
         self.max_depth = max_depth
         self.cache = {}  # Cache prerequisite queries to avoid redundant API calls
-        self.atlas_client: Optional[AtlasClient] = None
+        self.atlas_client: Optional[AtlasClient] = None # type: ignore
 
     def enable_atlas_integration(self, dataset_name: str) -> None:
-        """Enable Nomic Atlas integration for caching and search."""
+        """
+        Enable Nomic Atlas integration for caching and search.
+        启用 Nomic Atlas 集成，用于缓存和搜索。
+        """
 
         if AtlasClient is None:
-            print("Nomic Atlas client not available. Skipping integration.")
+            print("Nomic Atlas client not available. Skipping integration. Nomic Atlas 客户端不可用。跳过集成。")
             return
 
         try:
             client = AtlasClient(dataset_name)  # type: ignore[call-arg]
             client.ensure_dataset()
         except NomicNotInstalledError:
-            print("Nomic Atlas client not available. Skipping integration.")
+            print("Nomic Atlas client not available. Skipping integration. Nomic Atlas 客户端不可用。跳过集成。")
             return
 
         self.atlas_client = client
@@ -134,6 +154,25 @@ class PrerequisiteExplorer:
             nodes.append(await self.explore_async(prereq, depth + 1))
 
         return KnowledgeNode(concept=concept, depth=depth, is_foundation=False, prerequisites=nodes)
+    
+    """
+    您是一位分析某个概念是否为基础概念的专家教育者。
+    如果一个典型的高中毕业生无需进一步的数学或科学解释即可理解该概念，则其为基础概念。
+    基础概念示例 (Examples of Foundational Concepts)
+    速度 (velocity)、距离 (distance)、时间 (time)、加速度 (acceleration)
+    力 (force)、质量 (mass)、能量 (energy)
+    波 (waves)、频率 (frequency)、波长 (wavelength)
+    数字 (numbers)、加法 (addition)、乘法 (multiplication)
+    基础几何（点、线、角）(basic geometry: points, lines, angles)
+    函数 (functions)、图表/图像 (graphs)
+    非基础概念示例 (Examples of Non-Foundational Concepts)
+    洛伦兹变换 (Lorentz transformations)
+    规范理论 (gauge theory)
+    微分几何 (differential geometry)
+    张量微积分 (tensor calculus)
+    量子算符/量子运算符 (quantum operators)
+    希尔伯特空间 (Hilbert spaces)
+    """
 
     async def is_foundation_async(self, concept: str) -> bool:
         system_prompt = """You are an expert educator analyzing whether a concept is foundational.
@@ -203,6 +242,19 @@ Examples of non-foundational concepts:
             )
 
         return prerequisites
+    
+    """
+    您是一位专家教育者和课程设计者。
+    您的任务是识别某人在掌握给定概念之前必须理解的基本先决条件概念。
+    规则 (Rules)
+    只列出对理解至关重要（而非仅仅有帮助）的概念。
+    按重要性从高到低排序。
+    假定高中教育为知识基线（不要列出真正基础的事物）。
+    侧重于能促成理解的概念，而非仅仅历史背景。
+    务必具体——优先使用“狭义相对论”（special relativity）而非“相对论”（relativity）。
+    最多限制在 3-5 个先决条件。
+    仅返回一个概念名称的 JSON 数组，不得包含其他任何内容。
+    """
 
     async def discover_prerequisites_async(self, concept: str) -> List[str]:
         system_prompt = """You are an expert educator and curriculum designer.
@@ -220,6 +272,7 @@ Rules:
 
 Return ONLY a JSON array of concept names, nothing else."""
 
+        # 3-5 个基本的/必需的先决概念是什么
         user_prompt = f'''To understand "{concept}", what are the 3-5 ESSENTIAL prerequisite concepts?
 
 Return format: ["concept1", "concept2", "concept3"]'''
@@ -261,7 +314,7 @@ Return format: ["concept1", "concept2", "concept3"]'''
         return prerequisites[:5]
 
     # ------------------------------------------------------------------
-    # Backwards-compatible sync wrappers
+    # 向后兼容的同步包装器
     # ------------------------------------------------------------------
     def explore(self, concept: str, depth: int = 0) -> KnowledgeNode:
         return asyncio.run(self.explore_async(concept, depth))
@@ -320,8 +373,10 @@ Return format: ["concept1", "concept2", "concept3"]'''
 class ConceptAnalyzer:
     """
     Analyzes user input to extract the core concept and metadata.
+    分析用户输入以提取核心概念和元数据。
 
     Uses Claude Sonnet 4.5 for superior intent understanding.
+    使用 Claude Sonnet 4.5 实现卓越的意图理解。
     """
 
     def __init__(self, model: str = CLAUDE_MODEL):
@@ -330,10 +385,28 @@ class ConceptAnalyzer:
     def analyze(self, user_input: str) -> Dict:
         """
         Parse user input to identify:
+        解析用户输入以识别：    
         - Core concept(s)
+        - 核心概念
         - Domain (physics, math, CS, etc.)
+        - 领域（物理、数学、计算机科学等）
         - Complexity level
+        - 复杂程度
         - Learning goals
+        - 学习目标
+        """
+        """
+        您是一位擅长分析教育请求并提取关键信息的专家。
+        请分析用户的问题并提取：
+        他们想理解的主要概念（必须具体）
+        科学/数学领域
+        适当的复杂程度
+        他们的学习目标
+        仅返回有效的 JSON 格式，并使用以下精确的键：
+        core_concept
+        domain
+        level（必须是：“beginner”、“intermediate” 或 “advanced” 之一）
+        goal
         """
         system_prompt = """You are an expert at analyzing educational requests and extracting key information.
 
@@ -395,7 +468,10 @@ Example:
 
 
 def demo():
-    """Demo the prerequisite explorer on a few examples"""
+    """
+    Demo the prerequisite explorer on a few examples
+    演示在几个示例上运行先决条件探索器
+    """
 
     examples = [
         "Explain cosmology to me",

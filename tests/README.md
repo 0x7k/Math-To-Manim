@@ -1,8 +1,9 @@
 # Testing Guide for Math-To-Manim
 
 This directory contains comprehensive tests for the Math-To-Manim agent system.
+此目录包含 Math-To-Manim 代理系统的全面测试。
 
-## Test Structure
+## Test Structure 测试结构
 
 ```
 tests/
@@ -12,9 +13,9 @@ tests/
 └── README.md                        # This file
 ```
 
-## Running Tests
+## Running Tests 运行测试
 
-### Quick Start
+### Quick Start 快速开始
 
 ```bash
 # Run all unit tests

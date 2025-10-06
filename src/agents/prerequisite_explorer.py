@@ -11,7 +11,7 @@ from typing import List, Dict, Optional
 from dataclasses import dataclass, asdict
 from dotenv import load_dotenv
 from openai import OpenAI
-try:
+
 try:
     from .nomic_atlas_client import AtlasClient, AtlasConcept, NomicNotInstalledError
 except ImportError:  # pragma: no cover - optional dependency
@@ -76,7 +76,7 @@ class PrerequisiteExplorer:
         self.model = model
         self.max_depth = max_depth
         self.cache = {}  # Cache prerequisite queries to avoid redundant LLM calls
-        self.atlas_client: Optional[AtlasClient] = None
+        self.atlas_client: Optional[AtlasClient] = None # type: ignore
 
     def enable_atlas_integration(self, dataset_name: str) -> None:
         """Enable Nomic Atlas integration for caching and search."""

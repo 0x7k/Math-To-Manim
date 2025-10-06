@@ -9,6 +9,12 @@ For now the agent exposes a synchronous `review` method returning a structured
 result object. The plan is to wrap this inside the Claude agent runtime in a
 future iteration so the VideoReview step can participate in the multi-agent
 conversation.
+
+视频审查代理脚手架 (Video Review Agent Scaffolding)
+该代理旨在被附加到 Claude Agent SDK 管道中，位于 CodeGenerator 之后。
+它利用现有的 tools.video_review_toolkit 模块来自动化渲染后的质量保证 (QA) 任务，例如帧提取和 HTML5 播放器生成。
+目前，该代理公开了一个同步的 review 方法，用于返回一个结构化结果对象。
+计划是在未来的迭代中将其封装到 Claude 代理运行时内部，以便 VideoReview 步骤可以参与到多代理对话中。
 """
 
 from __future__ import annotations
@@ -30,7 +36,10 @@ from tools.video_review_toolkit import VideoReviewToolkit  # noqa: E402  pylint:
 
 @dataclass
 class VideoReviewResult:
-    """Structured output produced by the VideoReview agent."""
+    """
+    Structured output produced by the VideoReview agent.
+    VideoReview 代理生成的结构化输出。
+    """
 
     video_path: Path
     frames_dir: Path
@@ -38,7 +47,10 @@ class VideoReviewResult:
     metadata: Dict[str, Any]
 
     def to_dict(self) -> Dict[str, Any]:
-        """Return a JSON-serializable representation."""
+        """
+        Return a JSON-serializable representation.
+        返回一个可进行 JSON 序列化的表示。
+        """
 
         payload = asdict(self)
         payload.update(
@@ -51,14 +63,20 @@ class VideoReviewResult:
         return payload
 
     def to_json(self, **dumps_kwargs: Any) -> str:
-        """Serialize the payload to JSON (useful when returning via SDK)."""
+        """
+        Serialize the payload to JSON (useful when returning via SDK).
+        将有效载荷序列化为 JSON（在使用 SDK 返回时很有用）。
+        """
 
         return json.dumps(self.to_dict(), **dumps_kwargs)
 
 
 @dataclass
 class VideoReviewConfig:
-    """Optional configuration for the review step."""
+    """
+    Optional configuration for the review step.
+    审查步骤的可选配置。
+    """
 
     fps: Optional[float] = None
     every_nth_frame: Optional[int] = 10
@@ -69,11 +87,19 @@ class VideoReviewConfig:
 
 
 class VideoReviewAgent:
-    """Agent responsible for automating video QA helpers."""
+    """
+    Agent responsible for automating video QA helpers.
+    负责自动化视频 QA 辅助工具的代理。
+    """
 
     def __init__(self, toolkit: Optional[VideoReviewToolkit] = None) -> None:
         self.toolkit = toolkit or VideoReviewToolkit()
 
+    """
+    运行针对 ``video_path`` 的审查工作流程。
+    参数 video_path: 由 CodeGenerator 生成的渲染后的 MP4 文件的绝对或相对路径。
+    config: 可选的覆盖配置，用于控制帧采样和播放器生成。
+    """
     def review(self, video_path: Path | str, config: Optional[VideoReviewConfig] = None) -> VideoReviewResult:
         """Run the review workflow for ``video_path``.
 
